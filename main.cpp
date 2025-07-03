@@ -1,36 +1,54 @@
 #include <iostream>
-#include <vector>
-#include <algorithm>
 #include "Paciente.h"
+using namespace std;
 
-int main() {
-    std::vector<Paciente> pacientes;
+const int MAX_PACIENTES = 100;
+
+int main(){
+    Paciente pacientes[MAX_PACIENTES];
     int llegada = 1;
-    std::string nombre, gravedad;
+    int numPacientes = 0;
+    string nombre, gravedad;
     char opcion;
 
     do {
-        std::cout << "Nombre del paciente: ";
-        std::getline(std::cin, nombre);
-        std::cout << "Grado de emergencia (Verde, Amarillo, Naranja, Rojo): ";
-        std::getline(std::cin, gravedad);
+        if (numPacientes >= MAX_PACIENTES) {
+            cout << "Se alcanzó el número máximo de pacientes.\n";
+            break;
+        }
+        cout << "Nombre del paciente: ";
+        getline(cin, nombre);
+        cout << "Grado de emergencia (verde, amarillo, naranja, rojo): ";
+        getline(cin, gravedad);
 
-        pacientes.emplace_back(nombre, gravedad, llegada++);
-        std::cout << "¿Registrar otro paciente? (s/n): ";
-        std::cin >> opcion;
-        std::cin.ignore();
+        pacientes[numPacientes++] = Paciente(nombre, gravedad, llegada++);
+        cout << "Registrar otro paciente?(s/n): ";
+        cin >> opcion;
+        cin.ignore();
     } while (opcion == 's' || opcion == 'S');
 
-    // Ordenar por prioridad y llegada
-    std::sort(pacientes.begin(), pacientes.end(), [](const Paciente& a, const Paciente& b) {
-        if (a.getPrioridad() != b.getPrioridad())
-            return a.getPrioridad() > b.getPrioridad();
-        return a.getLlegada() < b.getLlegada();
-    });
+    if(numPacientes == 0) {
+        cout << "No hay pacientes registrados.\n";
+        return 0;
+    }
 
-    std::cout << "\nOrden de atención:\n";
-    for (const auto& p : pacientes) {
-        std::cout << p.getNombre() << " - " << p.getGravedad() << " (Llegada: " << p.getLlegada() << ")\n";
+    // Ordenar por prioridad y llegada (burbuja)
+    for (int i = 0; i < numPacientes - 1; ++i) {
+        for (int j = 0; j < numPacientes - i - 1; ++j) {
+            if (pacientes[j].getPrioridad() < pacientes[j+1].getPrioridad() ||
+                (pacientes[j].getPrioridad() == pacientes[j+1].getPrioridad() &&
+                 pacientes[j].getLlegada() > pacientes[j+1].getLlegada())) {
+                Paciente temp = pacientes[j];
+                pacientes[j] = pacientes[j+1];
+                pacientes[j+1] = temp;
+            }
+        }
+    }
+
+    cout << "\n Orden de atención:\n";
+    for (int i = 0; i < numPacientes; ++i) {
+        cout << pacientes[i].getNombre() << " - " << pacientes[i].getGravedad()
+             << " (Llegada: " << pacientes[i].getLlegada() << ")\n";
     }
 
     return 0;
